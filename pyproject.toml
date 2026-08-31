@@ -1,0 +1,87 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "thin-mcp"
+version = "0.1.0"
+description = "A small typed framework for building MCP tool servers"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Wild Edge contributors" },
+]
+keywords = ["mcp", "model-context-protocol", "pydantic", "json-rpc"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Django",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.12,<3",
+]
+
+[project.optional-dependencies]
+django = [
+    "Django>=4.2",
+    "django-ninja>=1.5.1",
+]
+
+[project.urls]
+Changelog = "https://github.com/wild-edge/thin-mcp/blob/main/CHANGELOG.md"
+Issues = "https://github.com/wild-edge/thin-mcp/issues"
+Repository = "https://github.com/wild-edge/thin-mcp"
+
+[dependency-groups]
+dev = [
+    "django-stubs>=5.2",
+    "mypy>=1.14",
+    "pytest>=8.3",
+    "pytest-cov>=6",
+    "ruff>=0.11",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/thin_mcp"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--strict-markers",
+    "--cov=thin_mcp",
+    "--cov-report=term-missing",
+    "--cov-fail-under=85",
+]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src/thin_mcp"]
+
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "B",
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "I",
+    "RUF",
+    "UP",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]

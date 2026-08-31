@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="650" viewBox="0 0 1240 650" role="img" aria-labelledby="title desc">
+  <title id="title">Deterministic thin-mcp tool registration lifecycle</title>
+  <desc id="desc">Django imports the MCP API, the core imports the tools package, and the tools package explicitly imports domain modules. Their decorators populate one registry before it is passed to McpServer.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+    <style>
+      .heading { font: 700 20px system-ui, -apple-system, sans-serif; fill: #0f172a; }
+      .label { font: 600 16px system-ui, -apple-system, sans-serif; fill: #0f172a; }
+      .small { font: 14px system-ui, -apple-system, sans-serif; fill: #334155; }
+      .arrow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .host { fill: #f3e8ff; stroke: #9333ea; stroke-width: 2; }
+      .library { fill: #dbeafe; stroke: #2563eb; stroke-width: 2; }
+      .domain { fill: #dcfce7; stroke: #16a34a; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect x="12" y="12" width="1216" height="626" rx="20" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="40" y="52" class="heading">Startup: populate one registry before serving requests</text>
+
+  <rect x="60" y="90" width="220" height="82" rx="12" class="host"/>
+  <text x="170" y="122" text-anchor="middle" class="label">Django URL config</text>
+  <text x="170" y="148" text-anchor="middle" class="small">imports mcp_server.api</text>
+
+  <path d="M280 131 H332" class="arrow"/>
+
+  <rect x="336" y="90" width="220" height="82" rx="12" class="host"/>
+  <text x="446" y="122" text-anchor="middle" class="label">api.py imports core.py</text>
+  <text x="446" y="148" text-anchor="middle" class="small">endpoint needs process_request</text>
+
+  <path d="M556 131 H608" class="arrow"/>
+
+  <rect x="612" y="90" width="250" height="82" rx="12" class="host"/>
+  <text x="737" y="122" text-anchor="middle" class="label">core.py imports tools</text>
+  <text x="737" y="148" text-anchor="middle" class="small">not tools_registry directly</text>
+
+  <path d="M862 131 H914" class="arrow"/>
+
+  <rect x="918" y="90" width="260" height="82" rx="12" class="host"/>
+  <text x="1048" y="122" text-anchor="middle" class="label">tools/__init__.py</text>
+  <text x="1048" y="148" text-anchor="middle" class="small">explicit ordered imports</text>
+
+  <path d="M1048 172 V226" class="arrow"/>
+
+  <rect x="760" y="230" width="190" height="90" rx="12" class="domain"/>
+  <text x="855" y="264" text-anchor="middle" class="label">tools/accounts.py</text>
+  <text x="855" y="291" text-anchor="middle" class="small">@register_tool(...)</text>
+
+  <rect x="974" y="230" width="190" height="90" rx="12" class="domain"/>
+  <text x="1069" y="264" text-anchor="middle" class="label">tools/projects.py</text>
+  <text x="1069" y="291" text-anchor="middle" class="small">@register_tool(...)</text>
+
+  <path d="M855 320 V374 H702" class="arrow"/>
+  <path d="M1069 320 V394 H702" class="arrow"/>
+
+  <rect x="420" y="346" width="278" height="112" rx="14" class="library"/>
+  <text x="559" y="381" text-anchor="middle" class="label">shared ToolRegistry</text>
+  <text x="559" y="408" text-anchor="middle" class="small">rejects duplicate names</text>
+  <text x="559" y="432" text-anchor="middle" class="small">preserves registration order</text>
+
+  <path d="M420 402 H352" class="arrow"/>
+
+  <rect x="62" y="346" width="286" height="112" rx="14" class="library"/>
+  <text x="205" y="381" text-anchor="middle" class="label">McpServer(registry)</text>
+  <text x="205" y="408" text-anchor="middle" class="small">tools/list reads definitions</text>
+  <text x="205" y="432" text-anchor="middle" class="small">tools/call executes same entries</text>
+
+  <path d="M205 458 V510" class="arrow"/>
+
+  <rect x="62" y="514" width="1102" height="78" rx="12" fill="#f8fafc" stroke="#64748b" stroke-dasharray="7 5"/>
+  <text x="613" y="545" text-anchor="middle" class="label">Desired invariant: explicit imports + one registry = deterministic discovery and execution</text>
+  <text x="613" y="572" text-anchor="middle" class="small">Do not scan files or rely on AppConfig.ready; add a domain module to tools/__init__.py intentionally.</text>
+</svg>
