@@ -145,7 +145,9 @@ caching with `Cache-Control: no-store`.
 The dedicated example app maps malformed JSON to JSON-RPC parse errors and
 invalid request envelopes to invalid-request errors, using HTTP 400 instead
 of FastAPI's default 422 response. Unexpected exceptions are logged and return
-a generic HTTP 500 JSON-RPC error. These app-wide handlers should be scoped to
+a generic HTTP 500 JSON-RPC error. Dispatch failures are caught in the route
+so their responses retain the validated request ID; failures before a valid
+request is available use a null ID. These app-wide handlers should be scoped to
 a dedicated MCP sub-application if your host also serves ordinary REST routes.
 
 For a real host, resolve authentication through your own FastAPI dependency

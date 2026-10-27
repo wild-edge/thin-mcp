@@ -15,12 +15,12 @@ examples/django_ninja/
 │   └── tools/
 │       ├── __init__.py         Explicit, ordered imports of domain tool modules
 │       └── echoes.py      Decorated wrappers calling echoes.core
-├── app.py                      McpServer configuration and HTTP handling
+├── api.py                      McpServer configuration and HTTP handling
 ├── permissions.py              Host-owned tool permission checks
 ├── settings.py                 Minimal local Django settings
 ├── urls.py                     Mounts POST /mcp
 ├── conftest.py                  Django setup for standalone example tests
-└── test_django_app.py
+└── test_django_api.py
 ```
 
 [echoes/core.py](../examples/django_ninja/echoes/core.py) defines
@@ -35,7 +35,7 @@ integration package.
 [mcp_server/__init__.py](../examples/django_ninja/mcp_server/__init__.py) owns the shared
 registry. [tools/__init__.py](../examples/django_ninja/mcp_server/tools/__init__.py) explicitly
 imports domain tool modules in registration order.
-[app.py](../examples/django_ninja/app.py) imports that populated registry,
+[api.py](../examples/django_ninja/api.py) imports that populated registry,
 constructs `McpServer`, and connects it to HTTP.
 All handlers use synchronous `def`.
 
@@ -108,6 +108,9 @@ Django Ninja validates the body into `McpRequest`. The route builds
 validated request. `render_mcp_result` preserves the HTTP status, JSON aliases,
 and empty HTTP 202 notification responses. `McpAPI` maps malformed requests
 and unexpected exceptions into MCP error envelopes and logs internal failures.
+The endpoint catches dispatch failures while the validated request is available,
+logs them, and returns a generic internal error with the original JSON-RPC ID.
+Errors before a valid request is available use a null ID.
 
 Authentication, authorization policy, origin validation, throttling, and
 auditing remain host responsibilities. Pass the authenticated identity to

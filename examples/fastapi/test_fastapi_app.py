@@ -111,6 +111,7 @@ def test_invalid_requests(client: TestClient, body: str, code: int) -> None:
     )
     assert response.status_code == 400
     assert response.json()["error"]["code"] == code
+    assert response.json()["id"] is None
 
 
 def test_modern_headers_are_validated(client: TestClient) -> None:
@@ -141,7 +142,9 @@ def test_modern_headers_are_validated(client: TestClient) -> None:
     )
 
 
+@pytest.mark.parametrize("request_id", [4, 0, "failed-call"])
 def test_unexpected_errors_are_logged_and_redacted(
+    request_id: int | str,
     client: TestClient, caplog: pytest.LogCaptureFixture
 ) -> None:
     with patch(
@@ -153,12 +156,13 @@ def test_unexpected_errors_are_logged_and_redacted(
             headers={"MCP-Protocol-Version": "2025-11-25"},
             json={
                 "jsonrpc": "2.0",
-                "id": 4,
+                "id": request_id,
                 "method": "tools/call",
                 "params": {"name": "echo", "arguments": {"text": "hello"}},
             },
         )
     assert response.status_code == 500
+    assert response.json()["id"] == request_id
     assert response.json()["error"] == {"code": -32603, "message": "Internal error."}
     assert "private details" not in response.text
     assert "Unhandled MCP request error" in caplog.text

@@ -22,13 +22,11 @@ dispatcher and typed tool registry remain framework-neutral; applications can
 also connect them to another framework, such as FastAPI, with a small route
 adapter.
 
-For a runnable FastAPI host, see the [FastAPI example](docs/fastapi.md), including
-startup commands, HTTP requests, and endpoint tests.
-
-The [Django Ninja example](docs/django-ninja.md) follows the same package layout.
+See the [runnable integration examples](examples/README.md) for Django Ninja
+and FastAPI hosts, including startup commands, HTTP requests, and endpoint tests.
 Both examples separate plain application functions in `echoes/core.py`,
 decorated MCP wrappers in `mcp_server/tools/echoes.py`, and HTTP handling
-in `app.py`.
+in Django's `api.py` or FastAPI's `app.py`.
 
 ## Installation
 

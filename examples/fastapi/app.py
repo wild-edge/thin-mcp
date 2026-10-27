@@ -40,6 +40,8 @@ def render_mcp_result(result: McpHttpResult) -> Response:
     )
 
 
+# These handlers apply to this entire dedicated MCP app. In a host with REST
+# routes, mount it as a separate MCP sub-application to preserve REST errors.
 @app.exception_handler(RequestValidationError)
 def invalid_request(request: Request, exc: RequestValidationError) -> Response:
     parse_error = any(error["type"] == "json_invalid" for error in exc.errors())
@@ -80,5 +82,19 @@ def mcp_endpoint(
         return render_mcp_result(invalid)
 
     # Replace None with the identity resolved by your host's authentication.
-    result = server.dispatch_request(user=None, request=payload, resources=(access,))
+    # Handle dispatch failures here, where the validated JSON-RPC ID is known.
+    try:
+        result = server.dispatch_request(user=None, request=payload, resources=(access,))
+    except Exception:
+        logger.exception("Unhandled MCP request error")
+        result = (
+            McpHttpResult.accepted()
+            if payload.is_notification
+            else McpHttpResult.error(
+                payload.id,
+                JsonRpcErrorCode.INTERNAL_ERROR,
+                "Internal error.",
+                status=500,
+            )
+        )
     return render_mcp_result(result)
