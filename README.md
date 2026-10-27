@@ -13,6 +13,15 @@ should provide a small integration package—typically named `mcp_server/`—tha
 registers tools from its application domains and connects the framework to its
 HTTP and security layers.
 
+## Why Django Ninja?
+
+Django API projects are often built with Django REST Framework (DRF). For this
+project, I wanted Pydantic models to define and validate the MCP-facing data,
+so I chose Django Ninja for the optional Django HTTP adapter. The protocol
+dispatcher and typed tool registry remain framework-neutral; applications can
+also connect them to another framework, such as FastAPI, with a small route
+adapter.
+
 > **Status:** `0.x` alpha. The package is suitable for pinned dependencies,
 > but its public API may still change between minor releases.
 

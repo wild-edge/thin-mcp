@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" role="img" aria-labelledby="title desc">
   <title id="title">Client request paths</title>
-  <desc id="desc">Requests enter the web app framework. Ordinary endpoints call core functions; MCP endpoints call thin_mcp.McpServer, which dispatches registered tool handlers to the core functions.</desc>
+  <desc id="desc">Ordinary endpoints apply normal-use authentication, permissions, and audit before calling core getters and setters. MCP endpoints apply MCP-specific authentication, permissions, and audit, including OAuth or token checks, then call thin_mcp.McpServer to dispatch registered tools.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
@@ -50,20 +50,26 @@
 
   <rect x="558" y="224" width="226" height="116" rx="14" class="host"/>
   <text x="671" y="261" text-anchor="middle" class="label">Ordinary endpoints</text>
+  <text x="671" y="289" text-anchor="middle" class="small">auth · permissions · audit</text>
+  <text x="671" y="313" text-anchor="middle" class="tiny">normal app use</text>
 
   <rect x="558" y="440" width="226" height="116" rx="14" class="host"/>
   <text x="671" y="477" text-anchor="middle" class="label">MCP endpoints</text>
+  <text x="671" y="505" text-anchor="middle" class="small">auth · permissions · audit</text>
+  <text x="671" y="529" text-anchor="middle" class="tiny">OAuth or tokens</text>
 
   <rect x="812" y="408" width="256" height="160" rx="16" class="library-boundary"/>
   <text x="832" y="436" class="tiny">thin_mcp</text>
   <rect x="834" y="452" width="212" height="92" rx="12" class="library"/>
   <text x="940" y="484" text-anchor="middle" class="label">thin_mcp.McpServer</text>
+  <text x="940" y="516" text-anchor="middle" class="small">registered tools</text>
 
   <!-- Lane 4: application-owned domain logic. -->
   <rect x="1120" y="154" width="248" height="486" rx="16" class="lane"/>
   <text x="1142" y="187" class="lane-title">4 · Core functions</text>
   <rect x="1142" y="300" width="204" height="154" rx="14" class="domain"/>
-  <text x="1244" y="382" text-anchor="middle" class="label">Core functions</text>
+  <text x="1244" y="368" text-anchor="middle" class="label">Core functions</text>
+  <text x="1244" y="399" text-anchor="middle" class="small">getters · setters</text>
 
   <!-- Client requests enter the same framework and split by route. -->
   <path d="M228 372 H316" class="arrow"/>

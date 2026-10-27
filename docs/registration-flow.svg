@@ -62,5 +62,5 @@
   <text x="1139" y="230" text-anchor="middle" class="small">lists and executes</text>
   <text x="1139" y="253" text-anchor="middle" class="small">the same entries</text>
 
-  <text x="40" y="388" class="tiny">Explicit imports keep startup predictable. No file scanning or Django startup hooks are needed.</text>
+  <text x="40" y="388" class="tiny">Explicit imports · stable order</text>
 </svg>
