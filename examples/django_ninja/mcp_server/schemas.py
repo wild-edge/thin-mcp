@@ -1,13 +1,14 @@
 """Typed input and output models exposed through MCP."""
 
-from pydantic import BaseModel, ConfigDict
+from ninja import Schema
+from pydantic import ConfigDict
 
 
-class EchoArguments(BaseModel):
+class EchoArguments(Schema):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     text: str
 
 
-class EchoResult(BaseModel):
+class EchoResult(Schema):
     text: str

@@ -39,6 +39,12 @@ imports domain tool modules in registration order.
 constructs `McpServer`, and connects it to HTTP.
 All handlers use synchronous `def`.
 
+[schemas.py](../examples/django_ninja/mcp_server/schemas.py) uses Django Ninja's
+[`Schema`](https://django-ninja.dev/guide/schemas/) for tool arguments and
+results. `Schema` subclasses Pydantic's `BaseModel`, so it works with the typed
+registry while keeping the example idiomatic to Ninja. Argument validation
+remains strict and rejects unknown fields.
+
 [permissions.py](../examples/django_ninja/permissions.py) defines
 `EchoEnabledPermission`, attached to the tool with
 `permissions=(EchoEnabledPermission(),)`. It checks the host's

@@ -79,7 +79,7 @@ def test_disabled_tool_is_denied_before_domain_execution(client: TestClient) -> 
 
     app.dependency_overrides[get_tool_access] = disabled_access
     try:
-        with patch("examples.fastapi.mcp_server.tools.echoes.core.echo") as echo:
+        with patch("examples.fastapi.mcp_server.tools.echoes.echo") as echo:
             response = client.post(
                 "/mcp",
                 headers={"MCP-Protocol-Version": "2025-11-25"},
@@ -145,7 +145,7 @@ def test_unexpected_errors_are_logged_and_redacted(
     client: TestClient, caplog: pytest.LogCaptureFixture
 ) -> None:
     with patch(
-        "examples.fastapi.mcp_server.tools.echoes.core.echo",
+        "examples.fastapi.mcp_server.tools.echoes.echo",
         side_effect=RuntimeError("private details"),
     ):
         response = client.post(

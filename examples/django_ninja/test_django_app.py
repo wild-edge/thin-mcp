@@ -75,10 +75,31 @@ def test_notification_has_empty_response(client: Client) -> None:
     assert response["Cache-Control"] == "no-store"
 
 
+@pytest.mark.parametrize("arguments", [{"text": 123}, {"text": "hello", "extra": True}])
+def test_ninja_schema_rejects_invalid_tool_arguments(
+    client: Client, arguments: dict[str, object]
+) -> None:
+    with patch("examples.django_ninja.mcp_server.tools.echoes.echo") as echo:
+        response = client.post(
+            "/mcp",
+            headers={"MCP-Protocol-Version": "2025-11-25"},
+            content_type="application/json",
+            data={
+                "jsonrpc": "2.0",
+                "id": "invalid-call",
+                "method": "tools/call",
+                "params": {"name": "echo", "arguments": arguments},
+            },
+        )
+        echo.assert_not_called()
+    assert response.status_code == 200
+    assert response.json()["result"]["isError"] is True
+
+
 def test_disabled_tool_is_denied_before_domain_execution(client: Client) -> None:
     with (
         override_settings(MCP_ECHO_ENABLED=False),
-        patch("examples.django_ninja.mcp_server.tools.echoes.core.echo") as echo,
+        patch("examples.django_ninja.mcp_server.tools.echoes.echo") as echo,
     ):
         response = client.post(
             "/mcp",
@@ -143,7 +164,7 @@ def test_unexpected_errors_are_logged_and_redacted(
     client: Client, caplog: pytest.LogCaptureFixture
 ) -> None:
     with patch(
-        "examples.django_ninja.mcp_server.tools.echoes.core.echo",
+        "examples.django_ninja.mcp_server.tools.echoes.echo",
         side_effect=RuntimeError("private details"),
     ):
         response = client.post(

@@ -4,7 +4,7 @@
 # Register that domain's MCP tools here; this is the recommended place to wrap
 # domain functions with @registry.register while keeping business logic in echoes/.
 
-from examples.fastapi.echoes import core
+from examples.fastapi.echoes.core import echo
 from examples.fastapi.mcp_server import registry
 from examples.fastapi.mcp_server.schemas import EchoArguments, EchoResult
 from examples.fastapi.permissions import EchoEnabledPermission
@@ -24,5 +24,5 @@ from thin_mcp import ToolAnnotations, ToolContext
         open_world_hint=False,
     ),
 )
-def echo(context: ToolContext, arguments: EchoArguments) -> EchoResult:
-    return EchoResult(text=core.echo(arguments.text))
+def echo_tool(context: ToolContext, arguments: EchoArguments) -> EchoResult:
+    return EchoResult(text=echo(arguments.text))
