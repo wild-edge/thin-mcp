@@ -348,7 +348,7 @@ def process_request(
 
     denied = authorize_tool_call(credential, request)
     if denied is not None:
-        return denied
+        return server.format_result(request, denied)
 
     return server.dispatch_request(
         credential.user,
@@ -369,8 +369,8 @@ below are placeholders for the host application's implementations.
 # mcp_server/api.py
 from django.http import HttpRequest, HttpResponse
 
+from thin_mcp import McpRequest, McpRequestHeaders
 from thin_mcp.django_ninja import McpAPI, render_mcp_result
-from thin_mcp.schemas import McpRequest
 
 from mcp_server.auth import McpBearerAuth
 from mcp_server.core import process_request

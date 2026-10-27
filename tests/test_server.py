@@ -114,6 +114,62 @@ def test_list_and_call_use_the_same_registered_tool() -> None:
     assert called.body.result.structured_content == EchoResult(text="hello")
 
 
+def test_multiple_tools_preserve_registration_order_and_dispatch_by_name() -> None:
+    server = make_server()
+
+    @server.tools.register(
+        name="uppercase",
+        description="Uppercase typed text.",
+        arguments_model=EchoArguments,
+        result_model=EchoResult,
+    )
+    def uppercase(context: ToolContext, arguments: EchoArguments) -> EchoResult:
+        return EchoResult(text=arguments.text.upper())
+
+    @server.tools.register(
+        name="decorate",
+        description="Decorate typed text.",
+        arguments_model=EchoArguments,
+        result_model=EchoResult,
+    )
+    def decorate(context: ToolContext, arguments: EchoArguments) -> EchoResult:
+        return EchoResult(text=f"[{arguments.text}]")
+
+    listed = server.dispatch_request(user=None, request=make_request("tools/list"))
+
+    assert isinstance(listed.body, JsonRpcResultResponse)
+    assert isinstance(listed.body.result, ToolsListResult)
+    assert [tool.name for tool in listed.body.result.tools] == [
+        "echo",
+        "uppercase",
+        "decorate",
+    ]
+
+    # Call in a different order to verify lookup uses names, not list positions.
+    for name, expected in (
+        ("decorate", "[hello]"),
+        ("echo", "hello"),
+        ("uppercase", "HELLO"),
+    ):
+        called = server.dispatch_request(
+            user=None,
+            request=make_request(
+                "tools/call",
+                params={"name": name, "arguments": {"text": "hello"}},
+            ),
+        )
+
+        assert isinstance(called.body, JsonRpcResultResponse)
+        assert isinstance(called.body.result, ToolResult)
+        assert called.body.result.is_error is False
+        assert called.body.result.structured_content == EchoResult(text=expected)
+
+    listed_again = server.dispatch_request(
+        user=None, request=make_request("tools/list")
+    )
+    assert listed_again == listed
+
+
 def test_invalid_tool_call_params_return_invalid_params() -> None:
     response = make_server().call_tool(
         user=None,
