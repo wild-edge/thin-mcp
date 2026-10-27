@@ -7,6 +7,7 @@
 from examples.fastapi.echoes import core
 from examples.fastapi.mcp_server import registry
 from examples.fastapi.mcp_server.schemas import EchoArguments, EchoResult
+from examples.fastapi.permissions import EchoEnabledPermission
 from thin_mcp import ToolAnnotations, ToolContext
 
 
@@ -15,6 +16,7 @@ from thin_mcp import ToolAnnotations, ToolContext
     description="Echo typed text.",
     arguments_model=EchoArguments,
     result_model=EchoResult,
+    permissions=(EchoEnabledPermission(),),
     annotations=ToolAnnotations(
         read_only_hint=True,
         destructive_hint=False,

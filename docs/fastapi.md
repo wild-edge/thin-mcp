@@ -22,6 +22,8 @@ examples/fastapi/
 │       ├── __init__.py         Explicit, ordered imports of domain tool modules
 │       └── echoes.py      Decorated wrappers calling echoes.core
 ├── app.py                      McpServer configuration and HTTP handling
+├── permissions.py              Host-owned tool permission checks
+├── dependencies.py             FastAPI dependency resolving request access
 └── test_fastapi_app.py
 ```
 
@@ -40,6 +42,20 @@ imports domain tool modules in registration order.
 [app.py](../examples/fastapi/app.py) imports that populated registry,
 constructs `McpServer`, and connects it to HTTP.
 All handlers use synchronous `def`.
+
+[dependencies.py](../examples/fastapi/dependencies.py) defines `get_tool_access`,
+injected into the route with FastAPI's
+[`Depends`](https://fastapi.tiangolo.com/tutorial/dependencies/). The local demo
+enables echo calls; a real host resolves this policy from its configuration
+and authenticated caller. The route passes the typed `ToolAccess` value into
+`dispatch_request(resources=(access,))`.
+
+[permissions.py](../examples/fastapi/permissions.py) defines
+`EchoEnabledPermission`, attached to the tool with
+`permissions=(EchoEnabledPermission(),)`. It reads that request-scoped policy
+before the domain function runs. Denied calls return a tool result with
+`isError: true`; the tool remains discoverable through `tools/list`.
+This is a host capability check; authentication remains a host responsibility.
 
 To expose another application feature, add a function to `echoes/core.py`
 and a typed wrapper to `mcp_server/tools/echoes.py`. For another domain,
@@ -61,7 +77,8 @@ For a separate host project, install the published package and your HTTP stack:
 pip install thin-mcp fastapi uvicorn
 ```
 
-Copy the application and MCP packages plus `app.py` into your project,
+Copy the application and MCP packages plus `app.py`, `permissions.py`, and
+`dependencies.py` into your project,
 adjust their `examples.fastapi` imports,
 and use your application module path when starting Uvicorn. The example exposes
 an unauthenticated echo tool for local use.
@@ -153,3 +170,5 @@ uv run --with fastapi --with httpx pytest examples/fastapi/test_fastapi_app.py -
 The tests use [FastAPI's TestClient](https://fastapi.tiangolo.com/tutorial/testing/)
 to cover initialization, listing and calling tools, notifications, malformed
 requests, modern protocol headers, and safe handling of unexpected exceptions.
+A [dependency override](https://fastapi.tiangolo.com/advanced/testing-dependencies/)
+supplies a denied policy to verify that permissions prevent domain execution.

@@ -1,5 +1,8 @@
 """Host-owned tool permissions; replace with your application access policy."""
 
+# ToolContext.user is the identity the host passes to dispatch_request(user=...).
+# This local example passes None; authenticate the caller before checking user access.
+
 from django.conf import settings
 from pydantic import BaseModel
 

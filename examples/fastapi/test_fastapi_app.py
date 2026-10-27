@@ -5,6 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from examples.fastapi.app import app
+from examples.fastapi.dependencies import get_tool_access
+from examples.fastapi.permissions import ToolAccess
 
 
 @pytest.fixture
@@ -69,6 +71,34 @@ def test_notification_has_empty_response(client: TestClient) -> None:
     assert response.status_code == 202
     assert response.content == b""
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_disabled_tool_is_denied_before_domain_execution(client: TestClient) -> None:
+    def disabled_access() -> ToolAccess:
+        return ToolAccess(echo_enabled=False)
+
+    app.dependency_overrides[get_tool_access] = disabled_access
+    try:
+        with patch("examples.fastapi.mcp_server.tools.echoes.core.echo") as echo:
+            response = client.post(
+                "/mcp",
+                headers={"MCP-Protocol-Version": "2025-11-25"},
+                json={
+                    "jsonrpc": "2.0",
+                    "id": "denied-call",
+                    "method": "tools/call",
+                    "params": {"name": "echo", "arguments": {"text": "hello"}},
+                },
+            )
+            echo.assert_not_called()
+    finally:
+        del app.dependency_overrides[get_tool_access]
+    assert response.status_code == 200
+    assert response.json()["id"] == "denied-call"
+    assert response.json()["result"]["isError"] is True
+    assert response.json()["result"]["content"] == [
+        {"type": "text", "text": "The echo tool is disabled by the host."}
+    ]
 
 
 @pytest.mark.parametrize(

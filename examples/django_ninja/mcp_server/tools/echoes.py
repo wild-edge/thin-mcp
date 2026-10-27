@@ -6,8 +6,8 @@
 
 from examples.django_ninja.echoes import core
 from examples.django_ninja.mcp_server import registry
-from examples.django_ninja.mcp_server.permissions import EchoEnabledPermission
 from examples.django_ninja.mcp_server.schemas import EchoArguments, EchoResult
+from examples.django_ninja.permissions import EchoEnabledPermission
 from thin_mcp import ToolAnnotations, ToolContext
 
 

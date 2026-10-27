@@ -1,12 +1,15 @@
 """Run from the repository root; see docs/fastapi.md."""
 
 import logging
+from typing import Annotated
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import Response
 
+from examples.fastapi.dependencies import get_tool_access
 from examples.fastapi.mcp_server.tools import registry
+from examples.fastapi.permissions import ToolAccess
 from thin_mcp import (
     JsonRpcErrorCode,
     McpHttpResult,
@@ -66,12 +69,16 @@ def internal_error(request: Request, exc: Exception) -> Response:
 
 
 @app.post("/mcp")
-def mcp_endpoint(request: Request, payload: McpRequest) -> Response:
+def mcp_endpoint(
+    request: Request,
+    payload: McpRequest,
+    access: Annotated[ToolAccess, Depends(get_tool_access)],
+) -> Response:
     headers = McpRequestHeaders.from_mapping(request.headers)
     invalid = server.validate_http_request(payload, headers)
     if invalid is not None:
         return render_mcp_result(invalid)
 
     # Replace None with the identity resolved by your host's authentication.
-    result = server.dispatch_request(user=None, request=payload)
+    result = server.dispatch_request(user=None, request=payload, resources=(access,))
     return render_mcp_result(result)

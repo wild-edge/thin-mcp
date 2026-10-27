@@ -12,11 +12,11 @@ examples/django_ninja/
 ├── mcp_server/
 │   ├── __init__.py              One shared ToolRegistry
 │   ├── schemas.py              MCP argument and result models
-│   ├── permissions.py          Host-owned tool permission checks
 │   └── tools/
 │       ├── __init__.py         Explicit, ordered imports of domain tool modules
 │       └── echoes.py      Decorated wrappers calling echoes.core
 ├── app.py                      McpServer configuration and HTTP handling
+├── permissions.py              Host-owned tool permission checks
 ├── settings.py                 Minimal local Django settings
 ├── urls.py                     Mounts POST /mcp
 ├── conftest.py                  Django setup for standalone example tests
@@ -39,7 +39,7 @@ imports domain tool modules in registration order.
 constructs `McpServer`, and connects it to HTTP.
 All handlers use synchronous `def`.
 
-[permissions.py](../examples/django_ninja/mcp_server/permissions.py) defines
+[permissions.py](../examples/django_ninja/permissions.py) defines
 `EchoEnabledPermission`, attached to the tool with
 `permissions=(EchoEnabledPermission(),)`. It checks the host's
 `MCP_ECHO_ENABLED` setting before the wrapper calls the domain function.
