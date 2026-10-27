@@ -71,7 +71,7 @@ def render_mcp_result(result: McpHttpResult) -> Response:
 
 
 @app.exception_handler(RequestValidationError)
-async def invalid_request(request: Request, exc: RequestValidationError) -> Response:
+def invalid_request(request: Request, exc: RequestValidationError) -> Response:
     parse_error = any(error["type"] == "json_invalid" for error in exc.errors())
     return render_mcp_result(
         McpHttpResult.error(
@@ -86,7 +86,7 @@ async def invalid_request(request: Request, exc: RequestValidationError) -> Resp
 
 
 @app.exception_handler(Exception)
-async def internal_error(request: Request, exc: Exception) -> Response:
+def internal_error(request: Request, exc: Exception) -> Response:
     logger.error("Unhandled MCP request error", exc_info=exc)
     return render_mcp_result(
         McpHttpResult.error(

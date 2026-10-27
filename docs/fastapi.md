@@ -73,9 +73,7 @@ The route uses synchronous `def` because tool execution is synchronous. FastAPI
 runs it in its thread pool, so a blocking host service does not run on the
 event loop. See [FastAPI concurrency](https://fastapi.tiangolo.com/async/).
 
-The two `async def` exception handlers only format error responses. Tool
-handlers and dispatch remain synchronous; this example does not add support
-for coroutine tool handlers.
+The route, exception handlers, and tool handlers all use synchronous `def`.
 
 `render_mcp_result` returns a
 [FastAPI Response directly](https://fastapi.tiangolo.com/advanced/response-directly/)
