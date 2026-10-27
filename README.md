@@ -7,20 +7,34 @@ transport-independent protocol dispatcher.
 
 ![How thin-mcp fits into a host application](docs/architecture.svg)
 
-The package deliberately does not own authentication, application permissions,
-throttling, auditing, Django models, or business logic. A Django application
-should provide a small integration package—typically named `mcp_server/`—that
-registers tools from its application domains and connects the framework to its
-HTTP and security layers.
+`thin-mcp` deliberately leaves authentication, application permissions,
+throttling, auditing, persistence, and business logic to the host application.
+This keeps the core independent of Django, FastAPI, and the frameworks or
+services an application uses for those responsibilities.
 
-## Why Django Ninja?
+As the application author, you register your tools with `thin-mcp` and build
+your own integration package—typically named `mcp_server/`—around them. That
+package connects MCP tool handling to your application's HTTP endpoints,
+authentication, access policies, and domain services using your chosen
+framework's conventions.
 
-Django API projects are often built with Django REST Framework (DRF). For this
-project, I wanted Pydantic models to define and validate the MCP-facing data,
-so I chose Django Ninja for the optional Django HTTP adapter. The protocol
-dispatcher and typed tool registry remain framework-neutral; applications can
-also connect them to another framework, such as FastAPI, with a small route
-adapter.
+## Why Pydantic models?
+
+Pydantic models give each tool an explicit contract for its arguments and
+results. Python type annotations make that contract readable to developers
+and available to editors and type checkers, while Pydantic validates incoming
+data at runtime. `thin-mcp` uses the registered models to generate the JSON
+schemas exposed to MCP clients and passes validated argument models to tool
+handlers. This keeps tool discovery and execution tied to the same definitions.
+
+Both [FastAPI](https://fastapi.tiangolo.com/tutorial/body/) and
+[Django Ninja](https://django-ninja.dev/guide/schemas/) use this approach at
+the HTTP boundary: FastAPI accepts Pydantic models directly, and Django Ninja's
+`Schema` extends Pydantic's `BaseModel`. Their typed endpoint parameters let
+the frameworks validate request bodies and provide model instances to application
+code. Using the same model foundation for MCP keeps the integration small and
+the data contracts explicit, while the core remains independent of either
+framework.
 
 See the [runnable integration examples](examples/README.md) for Django Ninja
 and FastAPI hosts, including startup commands, HTTP requests, and endpoint tests.
