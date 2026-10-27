@@ -5,6 +5,10 @@ The important design choice is that `thin-mcp` is a dependency of a host-owned
 integration package; it is not a Django app that discovers or owns your domain
 logic.
 
+For a FastAPI host, use the separate [FastAPI example](docs/fastapi.md).
+For a minimal runnable Django host with the same module structure, see the
+[Django Ninja example](docs/django-ninja.md).
+
 ![Request and execution architecture](docs/architecture.svg)
 
 ## 1. Keep three responsibilities separate
@@ -367,15 +371,19 @@ below are placeholders for the host application's implementations.
 
 ```python
 # mcp_server/api.py
+import logging
+
 from django.http import HttpRequest, HttpResponse
 
-from thin_mcp import McpRequest, McpRequestHeaders
+from thin_mcp import JsonRpcErrorCode, McpHttpResult, McpRequest, McpRequestHeaders
 from thin_mcp.django_ninja import McpAPI, render_mcp_result
 
 from mcp_server.auth import McpBearerAuth
 from mcp_server.core import process_request
 from mcp_server.models import McpCredential
 from mcp_server.throttle import McpThrottle
+
+logger = logging.getLogger(__name__)
 
 api = McpAPI(
     title="My product MCP",
@@ -392,11 +400,24 @@ def mcp_endpoint(request: HttpRequest, payload: McpRequest) -> HttpResponse:
     if not isinstance(credential, McpCredential):
         return HttpResponse(status=401)
 
-    result = process_request(
-        credential,
-        payload,
-        McpRequestHeaders.from_mapping(request.headers),
-    )
+    try:
+        result = process_request(
+            credential,
+            payload,
+            McpRequestHeaders.from_mapping(request.headers),
+        )
+    except Exception:
+        logger.exception("Unhandled MCP request error")
+        result = (
+            McpHttpResult.accepted()
+            if payload.is_notification
+            else McpHttpResult.error(
+                payload.id,
+                JsonRpcErrorCode.INTERNAL_ERROR,
+                "Internal error.",
+                status=500,
+            )
+        )
     return render_mcp_result(result)
 ```
 
