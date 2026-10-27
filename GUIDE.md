@@ -5,6 +5,8 @@ The important design choice is that `thin-mcp` is a dependency of a host-owned
 integration package; it is not a Django app that discovers or owns your domain
 logic.
 
+For a FastAPI host, use the separate [FastAPI example](docs/fastapi.md).
+
 ![Request and execution architecture](docs/architecture.svg)
 
 ## 1. Keep three responsibilities separate

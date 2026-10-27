@@ -22,6 +22,9 @@ dispatcher and typed tool registry remain framework-neutral; applications can
 also connect them to another framework, such as FastAPI, with a small route
 adapter.
 
+For a runnable FastAPI host, see the [FastAPI example](docs/fastapi.md), including
+startup commands, HTTP requests, and endpoint tests.
+
 ## Installation
 
 Install the core package:
