@@ -1,0 +1,87 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+      - name: Check release tag matches package version
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+          tag = os.environ["GITHUB_REF_NAME"]
+          if tag != f"v{version}":
+              raise SystemExit(f"Release tag {tag!r} must match v{version}")
+          PY
+      - run: uv build --no-sources
+      - run: uvx --from twine twine check --strict dist/*
+      - name: Check core wheel installation without Django
+        run: |
+          uv venv /tmp/thin-mcp-core
+          uv pip install --python /tmp/thin-mcp-core/bin/python dist/*.whl
+          /tmp/thin-mcp-core/bin/python -I - <<'PY'
+          import importlib.util
+          from importlib.metadata import distribution
+
+          import thin_mcp
+
+          assert importlib.util.find_spec("django") is None
+          assert importlib.util.find_spec("ninja") is None
+          assert distribution("thin-mcp").locate_file("thin_mcp/py.typed").is_file()
+          PY
+      - name: Check Django extra installation
+        run: |
+          uv venv /tmp/thin-mcp-django
+          uv pip install --python /tmp/thin-mcp-django/bin/python "thin-mcp[django] @ $(echo dist/*.whl)"
+          /tmp/thin-mcp-django/bin/python -I - <<'PY'
+          from django.conf import settings
+
+          settings.configure()
+
+          from thin_mcp.django_ninja import McpAPI
+
+          assert McpAPI is not None
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-distributions
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/thin-mcp/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Publish distributions with Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@release/v1

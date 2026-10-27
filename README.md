@@ -1,9 +1,5 @@
 # thin-mcp
 
-> **Warning:** This is the first public version of `thin-mcp`. It is being
-> tested before publication on PyPI. Treat it as an experimental `0.x` alpha;
-> its public API may change between minor releases.
-
 `thin-mcp` is a small, typed framework for implementing the tool-serving
 surface of the [Model Context Protocol](https://modelcontextprotocol.io/).
 It connects strict Pydantic models to an explicit tool registry and a
@@ -170,6 +166,8 @@ uv build
 ```
 
 Repository contributors should also read [AGENTS.md](AGENTS.md).
+Maintainers can follow [Publishing to PyPI](docs/releasing.md) to configure
+Trusted Publishing and release from GitHub Actions.
 
 ## Versioning and license
 

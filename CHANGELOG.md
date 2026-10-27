@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The project follows
 
 ### Added
 
+- GitHub Release publishing workflow using PyPI Trusted Publishing, with
+  release checks and isolated wheel installation checks.
 - Modern MCP `2026-07-28` discovery, metadata, and Streamable HTTP header
   validation while preserving legacy initialization behavior.
 - Protocol header and method enums, plus structured unsupported-version errors.
