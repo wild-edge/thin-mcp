@@ -34,12 +34,13 @@ class McpHttpResult:
         message: str,
         *,
         status: int = 200,
+        data: BaseModel | None = None,
     ) -> "McpHttpResult":
         return cls(
             status=status,
             body=JsonRpcErrorResponse(
                 id=request_id,
-                error=JsonRpcError(code=code, message=message),
+                error=JsonRpcError(code=code, message=message, data=data),
             ),
         )
 

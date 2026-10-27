@@ -287,9 +287,9 @@ credential model and capability checks are application-specific.
 from pydantic import ValidationError
 
 from thin_mcp import (
-    JsonRpcErrorCode,
     McpHttpResult,
     McpRequest,
+    McpRequestHeaders,
     McpServer,
     ToolCallParams,
 )
@@ -299,7 +299,7 @@ from mcp_server.models import McpCredential
 from mcp_server.tools import tool_registry
 from mcp_server.tools_registry import tool_access
 
-PROTOCOL_VERSIONS = ("2025-06-18", "2025-11-25")
+PROTOCOL_VERSIONS = ("2025-06-18", "2025-11-25", "2026-07-28")
 
 server = McpServer(
     name="my-product",
@@ -340,15 +340,11 @@ def authorize_tool_call(
 def process_request(
     credential: McpCredential,
     request: McpRequest,
-    protocol_version: str,
+    headers: McpRequestHeaders,
 ) -> McpHttpResult:
-    if not server.request_protocol_is_supported(request, protocol_version):
-        return McpHttpResult.error(
-            request.id,
-            JsonRpcErrorCode.SERVER_ERROR,
-            "Unsupported MCP-Protocol-Version.",
-            status=400,
-        )
+    protocol_error = server.validate_http_request(request, headers)
+    if protocol_error is not None:
+        return protocol_error
 
     denied = authorize_tool_call(credential, request)
     if denied is not None:
@@ -399,7 +395,7 @@ def mcp_endpoint(request: HttpRequest, payload: McpRequest) -> HttpResponse:
     result = process_request(
         credential,
         payload,
-        request.headers.get("MCP-Protocol-Version", "2025-06-18"),
+        McpRequestHeaders.from_mapping(request.headers),
     )
     return render_mcp_result(result)
 ```

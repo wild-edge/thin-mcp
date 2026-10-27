@@ -1,6 +1,8 @@
 """Reusable MCP protocol and tool registration infrastructure."""
 
+from thin_mcp.enums import McpHeaderName, McpMethodName
 from thin_mcp.error_codes import JsonRpcErrorCode
+from thin_mcp.protocol import McpRequestHeaders
 from thin_mcp.responses import McpHttpResult
 from thin_mcp.schemas import (
     EmptyToolArguments,
@@ -20,8 +22,11 @@ from thin_mcp.tools import (
 __all__ = (
     "EmptyToolArguments",
     "JsonRpcErrorCode",
+    "McpHeaderName",
     "McpHttpResult",
+    "McpMethodName",
     "McpRequest",
+    "McpRequestHeaders",
     "McpServer",
     "ToolAnnotations",
     "ToolCallParams",

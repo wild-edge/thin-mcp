@@ -5,6 +5,12 @@ All notable changes to this project are documented here. The project follows
 
 ## [Unreleased]
 
+### Added
+
+- Modern MCP `2026-07-28` discovery, metadata, and Streamable HTTP header
+  validation while preserving legacy initialization behavior.
+- Protocol header and method enums, plus structured unsupported-version errors.
+
 ## [0.1.0] - 2026-08-31
 
 ### Added

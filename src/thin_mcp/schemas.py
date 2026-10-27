@@ -78,6 +78,44 @@ class InitializeParams(BaseModel):
     client_info: ImplementationInfo = Field(alias="clientInfo")
 
 
+class RequestMetadata(BaseModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    protocol_version: str = Field(alias="io.modelcontextprotocol/protocolVersion")
+    client_capabilities: dict[str, Any] = Field(
+        alias="io.modelcontextprotocol/clientCapabilities"
+    )
+    client_info: ImplementationInfo | None = Field(
+        default=None, alias="io.modelcontextprotocol/clientInfo"
+    )
+
+
+class ResultMetadata(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    server_info: ImplementationInfo = Field(alias="io.modelcontextprotocol/serverInfo")
+
+
+class McpResult(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    result_type: Literal["complete"] | None = Field(
+        default=None, alias="resultType", exclude_if=lambda value: value is None
+    )
+    meta: ResultMetadata | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
+
+
+class CacheableResult(McpResult):
+    ttl_ms: int | None = Field(
+        default=None, alias="ttlMs", ge=0, exclude_if=lambda value: value is None
+    )
+    cache_scope: Literal["private", "public"] | None = Field(
+        default=None, alias="cacheScope", exclude_if=lambda value: value is None
+    )
+
+
 class ToolAnnotations(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
@@ -97,7 +135,7 @@ class ToolDefinition(BaseModel):
     annotations: ToolAnnotations = Field(default_factory=ToolAnnotations)
 
 
-class ToolsListResult(BaseModel):
+class ToolsListResult(CacheableResult):
     tools: list[ToolDefinition]
 
 
@@ -106,7 +144,7 @@ class TextContent(BaseModel):
     text: str
 
 
-class ToolResult(BaseModel):
+class ToolResult(McpResult):
     model_config = ConfigDict(populate_by_name=True)
 
     content: list[TextContent]
@@ -118,7 +156,7 @@ class ToolResult(BaseModel):
     is_error: bool = Field(default=False, alias="isError")
 
 
-class EmptyResult(BaseModel):
+class EmptyResult(McpResult):
     model_config = ConfigDict(extra="forbid")
 
 
@@ -130,7 +168,7 @@ class ServerCapabilities(BaseModel):
     tools: ToolCapabilities = Field(default_factory=ToolCapabilities)
 
 
-class InitializeResult(BaseModel):
+class InitializeResult(McpResult):
     model_config = ConfigDict(populate_by_name=True)
 
     protocol_version: str = Field(alias="protocolVersion")
@@ -138,9 +176,22 @@ class InitializeResult(BaseModel):
     server_info: ImplementationInfo = Field(alias="serverInfo")
 
 
+class DiscoverResult(CacheableResult):
+    supported_versions: list[str] = Field(alias="supportedVersions")
+    capabilities: ServerCapabilities = Field(default_factory=ServerCapabilities)
+
+
+class UnsupportedProtocolVersionData(BaseModel):
+    supported: list[str]
+    requested: str
+
+
 class JsonRpcError(BaseModel):
     code: int
     message: str
+    data: SerializeAsAny[BaseModel] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
 
 
 class JsonRpcErrorResponse(BaseModel):

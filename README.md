@@ -133,10 +133,18 @@ Django Ninja hosts can use `thin_mcp.django_ninja.McpAPI` and
 The dispatcher currently supports:
 
 - `initialize`
+- `server/discover` for the modern protocol flow
 - `ping`
 - `tools/list`
 - `tools/call`
 - notifications that require no response body
+
+Legacy handshake protocol versions and the modern `2026-07-28` request metadata
+flow are supported. For modern Streamable HTTP requests, the host builds
+`McpRequestHeaders` from the incoming headers, calls
+`server.validate_http_request(request, headers)`, returns any validation result,
+and otherwise dispatches the request. Modern responses include protocol result
+metadata and disable caching for discovery and tool listings.
 
 Resources, prompts, sampling, elicitation, tasks, sessions, server-initiated
 notifications, and streaming are not implemented.
