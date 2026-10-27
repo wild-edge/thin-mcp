@@ -1,5 +1,9 @@
 # thin-mcp
 
+> **Warning:** This is the first public version of `thin-mcp`. It is being
+> tested before publication on PyPI. Treat it as an experimental `0.x` alpha;
+> its public API may change between minor releases.
+
 `thin-mcp` is a small, typed framework for implementing the tool-serving
 surface of the [Model Context Protocol](https://modelcontextprotocol.io/).
 It connects strict Pydantic models to an explicit tool registry and a
@@ -21,9 +25,6 @@ so I chose Django Ninja for the optional Django HTTP adapter. The protocol
 dispatcher and typed tool registry remain framework-neutral; applications can
 also connect them to another framework, such as FastAPI, with a small route
 adapter.
-
-> **Status:** `0.x` alpha. The package is suitable for pinned dependencies,
-> but its public API may still change between minor releases.
 
 ## Installation
 
