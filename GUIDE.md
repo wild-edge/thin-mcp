@@ -6,6 +6,8 @@ integration package; it is not a Django app that discovers or owns your domain
 logic.
 
 For a FastAPI host, use the separate [FastAPI example](docs/fastapi.md).
+For a minimal runnable Django host with the same module structure, see the
+[Django Ninja example](docs/django-ninja.md).
 
 ![Request and execution architecture](docs/architecture.svg)
 

@@ -5,57 +5,24 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import Response
-from pydantic import BaseModel, ConfigDict
 
+from examples.fastapi.mcp_server.tools import registry
 from thin_mcp import (
     JsonRpcErrorCode,
     McpHttpResult,
     McpRequest,
     McpRequestHeaders,
     McpServer,
-    ToolAnnotations,
-    ToolContext,
-    ToolRegistry,
 )
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title="thin-mcp FastAPI example")
-registry = ToolRegistry()
-
-
-class EchoArguments(BaseModel):
-    model_config = ConfigDict(extra="forbid", strict=True)
-
-    text: str
-
-
-class EchoResult(BaseModel):
-    text: str
-
-
-@registry.register(
-    name="echo",
-    description="Echo typed text.",
-    arguments_model=EchoArguments,
-    result_model=EchoResult,
-    annotations=ToolAnnotations(
-        read_only_hint=True,
-        destructive_hint=False,
-        idempotent_hint=True,
-        open_world_hint=False,
-    ),
-)
-def echo(context: ToolContext, arguments: EchoArguments) -> EchoResult:
-    return EchoResult(text=arguments.text)
-
-
 server = McpServer(
     name="fastapi-example",
     version="1.0.0",
     protocol_versions=("2025-11-25", "2026-07-28"),
     tools=registry,
 )
-
 
 def render_mcp_result(result: McpHttpResult) -> Response:
     return Response(

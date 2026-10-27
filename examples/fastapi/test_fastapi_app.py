@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from examples.fastapi_app import app
+from examples.fastapi.app import app
 
 
 @pytest.fixture
@@ -115,13 +115,18 @@ def test_unexpected_errors_are_logged_and_redacted(
     client: TestClient, caplog: pytest.LogCaptureFixture
 ) -> None:
     with patch(
-        "examples.fastapi_app.McpServer.dispatch_request",
+        "examples.fastapi.mcp_server.tools.echoes.core.echo",
         side_effect=RuntimeError("private details"),
     ):
         response = client.post(
             "/mcp",
             headers={"MCP-Protocol-Version": "2025-11-25"},
-            json={"jsonrpc": "2.0", "id": 4, "method": "ping"},
+            json={
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {"name": "echo", "arguments": {"text": "hello"}},
+            },
         )
     assert response.status_code == 500
     assert response.json()["error"] == {"code": -32603, "message": "Internal error."}

@@ -1,16 +1,58 @@
 # FastAPI example
 
-[examples/fastapi_app.py](../examples/fastapi_app.py) is a complete, runnable
+[examples/fastapi/app.py](../examples/fastapi/app.py) is a complete, runnable
 host application with a typed `echo` tool and a `POST /mcp` endpoint. It uses
 the core `thin-mcp` package. FastAPI remains a host dependency; there is no
 FastAPI extra or framework adapter inside `thin_mcp`.
+
+The [Django Ninja example](django-ninja.md) follows the same structure in
+`examples/django_ninja/`.
+
+The example separates application logic, MCP wrappers, and HTTP handling:
+
+```text
+examples/fastapi/
+├── echoes/
+│   ├── __init__.py
+│   └── core.py                 Application functions with ordinary Python types
+├── mcp_server/
+│   ├── __init__.py              One shared ToolRegistry
+│   ├── schemas.py              MCP argument and result models
+│   └── tools/
+│       ├── __init__.py         Explicit, ordered imports of domain tool modules
+│       └── echoes.py      Decorated wrappers calling echoes.core
+├── app.py                      McpServer configuration and HTTP handling
+└── test_fastapi_app.py
+```
+
+[echoes/core.py](../examples/fastapi/echoes/core.py) defines
+`echo(text: str) -> str` independently of the HTTP framework and `thin_mcp`.
+Other application entry points can call this function directly.
+
+[mcp_server/tools/echoes.py](../examples/fastapi/mcp_server/tools/echoes.py)
+imports `thin_mcp` and uses `@registry.register` to wrap that function with typed
+MCP arguments and results. The application package never imports the MCP
+integration package.
+
+[mcp_server/__init__.py](../examples/fastapi/mcp_server/__init__.py) owns the shared
+registry. [tools/__init__.py](../examples/fastapi/mcp_server/tools/__init__.py) explicitly
+imports domain tool modules in registration order.
+[app.py](../examples/fastapi/app.py) imports that populated registry,
+constructs `McpServer`, and connects it to HTTP.
+All handlers use synchronous `def`.
+
+To expose another application feature, add a function to `echoes/core.py`
+and a typed wrapper to `mcp_server/tools/echoes.py`. For another domain,
+add its application package and tool module, then explicitly import that tool
+module in `mcp_server/tools/__init__.py`. Keep business logic in application
+packages, and protocol adaptation in `mcp_server/`.
 
 ## Run it
 
 From the repository root with Python 3.12 or newer:
 
 ```bash
-uv run --with fastapi --with uvicorn uvicorn examples.fastapi_app:app --reload
+uv run --with fastapi --with uvicorn uvicorn examples.fastapi.app:app --reload
 ```
 
 For a separate host project, install the published package and your HTTP stack:
@@ -19,8 +61,10 @@ For a separate host project, install the published package and your HTTP stack:
 pip install thin-mcp fastapi uvicorn
 ```
 
-Copy the example into your application and use its module path when starting
-Uvicorn. The example exposes an unauthenticated echo tool for local use.
+Copy the application and MCP packages plus `app.py` into your project,
+adjust their `examples.fastapi` imports,
+and use your application module path when starting Uvicorn. The example exposes
+an unauthenticated echo tool for local use.
 
 ## Try the endpoint
 
@@ -94,9 +138,8 @@ tool permissions. Authentication, origin validation, throttling, and auditing
 belong in the host. The example implements the library's JSON-response subset;
 it does not add streaming, sessions, or server-initiated notifications.
 
-As your tool set grows, split the registry, server configuration, HTTP route,
-and domain tools into a host-owned `mcp_server/` package. Explicitly import tool
-modules in stable order, following the [integration guide](../GUIDE.md).
+For a larger host with application permissions and domain services, follow
+the [integration guide](../GUIDE.md).
 
 ## Verify it
 
@@ -104,7 +147,7 @@ From the repository root:
 
 ```bash
 uv sync --extra django --group dev
-uv run --with fastapi --with httpx pytest examples/test_fastapi_app.py --no-cov
+uv run --with fastapi --with httpx pytest examples/fastapi/test_fastapi_app.py --no-cov
 ```
 
 The tests use [FastAPI's TestClient](https://fastapi.tiangolo.com/tutorial/testing/)

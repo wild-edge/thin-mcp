@@ -28,5 +28,5 @@ jobs:
       - run: uv run ruff check .
       - run: uv run mypy
       - run: uv run pytest
-      - run: uv run --with fastapi --with httpx pytest examples/test_fastapi_app.py --no-cov
+      - run: uv run --with fastapi --with httpx pytest examples --no-cov
       - run: uv build

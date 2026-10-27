@@ -25,6 +25,11 @@ adapter.
 For a runnable FastAPI host, see the [FastAPI example](docs/fastapi.md), including
 startup commands, HTTP requests, and endpoint tests.
 
+The [Django Ninja example](docs/django-ninja.md) follows the same package layout.
+Both examples separate plain application functions in `echoes/core.py`,
+decorated MCP wrappers in `mcp_server/tools/echoes.py`, and HTTP handling
+in `app.py`.
+
 ## Installation
 
 Install the core package:

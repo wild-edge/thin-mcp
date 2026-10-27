@@ -1,0 +1,1 @@
+"""FastAPI host integration example."""
