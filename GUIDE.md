@@ -252,11 +252,11 @@ Use `ToolExecutionError` for expected failures that a client can act on. Allow
 unexpected exceptions to propagate so the host can log them and return a safe
 internal-error envelope.
 
-## Metadata and image results
+## Metadata and content results
 
 A registration may provide JSON-compatible `meta`, exposed unchanged as `_meta`
 in `tools/list`, and a `content_builder` that receives the request context and
-validated result. Its text or image blocks follow the existing JSON text
+validated result. Its content blocks follow the existing JSON text
 fallback; `structuredContent` remains the validated result. The callback runs
 once after permissions and validation. Raise `ToolExecutionError` for expected
 failures; unexpected exceptions propagate to the host.
@@ -301,6 +301,15 @@ def preview(context: ToolContext, arguments: PreviewArguments) -> PreviewResult:
 Image data is base64-encoded and increases payload size by roughly one third.
 The host owns image access checks, preparation, and preview size limits. Test
 actual display separately with each target client.
+
+The callback can return `TextContent`, `ImageContent`, `AudioContent`,
+`ResourceLink`, and `EmbeddedResource` blocks in any combination. Blocks
+support optional `ContentAnnotations` and JSON `_meta`. Embedded resources
+contain either `TextResourceContents` or `BlobResourceContents`; binary blobs
+and audio data are base64-encoded. Resource links need a URI clients can access.
+`thin-mcp` does not implement resource discovery or reads: hosts must provide
+those capabilities separately when needed. The MCP specification recommends
+that servers using embedded resources implement the resources capability.
 
 ## 7. Import domain modules explicitly
 

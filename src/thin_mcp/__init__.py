@@ -5,12 +5,17 @@ from thin_mcp.error_codes import JsonRpcErrorCode
 from thin_mcp.protocol import McpRequestHeaders
 from thin_mcp.responses import McpHttpResult
 from thin_mcp.schemas import (
+    AudioContent,
+    BlobResourceContents,
     ContentAnnotations,
     ContentBlock,
+    EmbeddedResource,
     EmptyToolArguments,
     ImageContent,
     McpRequest,
+    ResourceLink,
     TextContent,
+    TextResourceContents,
     ToolAnnotations,
     ToolCallParams,
 )
@@ -25,9 +30,12 @@ from thin_mcp.tools import (
 )
 
 __all__ = (
+    "AudioContent",
+    "BlobResourceContents",
     "ContentAnnotations",
     "ContentBlock",
     "ContentBuilder",
+    "EmbeddedResource",
     "EmptyToolArguments",
     "ImageContent",
     "JsonRpcErrorCode",
@@ -37,7 +45,9 @@ __all__ = (
     "McpRequest",
     "McpRequestHeaders",
     "McpServer",
+    "ResourceLink",
     "TextContent",
+    "TextResourceContents",
     "ToolAnnotations",
     "ToolCallParams",
     "ToolContext",

@@ -124,3 +124,56 @@ def test_callback_order_and_failures() -> None:
     assert tool.execute(None, {"value": 3}).content[0].text == "expected"
     with pytest.raises(RuntimeError, match="unexpected"):
         tool.execute(None, {"value": 4})
+
+
+def test_all_content_types_through_callback_and_http() -> None:
+    from thin_mcp import (
+        AudioContent,
+        BlobResourceContents,
+        ContentBlock,
+        EmbeddedResource,
+        ResourceLink,
+        TextResourceContents,
+    )
+
+    annotations = ContentAnnotations(audience=["assistant"], priority=0.8)
+    blocks: list[ContentBlock] = [
+        TextContent(text="details", annotations=annotations, meta={"example.org/a": 1}),
+        ImageContent(data=PNG, mime_type="image/png"),
+        AudioContent(data="UklGRg==", mime_type="audio/wav", annotations=annotations),
+        ResourceLink(uri="example://document", name="document", title="Document", description="A document", mime_type="text/plain", size=5, annotations=annotations),
+        EmbeddedResource(resource=TextResourceContents(uri="example://text", text="hello", mime_type="text/plain", annotations=annotations), annotations=annotations),
+        EmbeddedResource(resource=BlobResourceContents(uri="example://blob", blob="AAEC", mime_type="application/octet-stream", meta={"example.org/b": True})),
+    ]
+    registry = ToolRegistry()
+
+    def content(context: ToolContext, result: Result) -> list[ContentBlock]:
+        return blocks
+
+    @registry.register(name="all", description="all", arguments_model=Args, result_model=Result, content_builder=content)
+    def handler(context: ToolContext, arguments: Args) -> Result:
+        return Result(value=arguments.value)
+
+    server = McpServer(name="test", version="1", protocol_versions=("2025-06-18",), tools=registry)
+    response = server.dispatch_request(None, request("tools/call", {"name": "all", "arguments": {"value": 3}}))
+    result = json.loads(render_mcp_result(response).content)["result"]
+    assert result["structuredContent"] == {"value": 3}
+    assert result["content"][1:] == [block.model_dump(by_alias=True) for block in blocks]
+    parsed = ToolResult.model_validate({"content": result["content"]})
+    assert [type(block) for block in parsed.content[1:]] == [type(block) for block in blocks]
+    assert isinstance(parsed.content[-2].resource, TextResourceContents)
+    assert isinstance(parsed.content[-1].resource, BlobResourceContents)
+
+
+@pytest.mark.parametrize("block", [
+    {"type": "audio", "data": "AA=="},
+    {"type": "audio", "mimeType": "audio/wav"},
+    {"type": "resource_link", "name": "x"},
+    {"type": "resource_link", "uri": "example://x"},
+    {"type": "resource", "resource": {"uri": "example://x"}},
+    {"type": "resource", "resource": {"uri": "example://x", "text": "x", "blob": "AA=="}},
+    {"type": "unknown"},
+])
+def test_invalid_additional_content(block: dict) -> None:
+    with pytest.raises(ValidationError):
+        ToolResult.model_validate({"content": [block]})

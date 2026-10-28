@@ -154,8 +154,8 @@ user and request-scoped resources, and serializes the returned `McpHttpResult`.
 Django Ninja hosts can use `thin_mcp.django_ninja.McpAPI` and
 `render_mcp_result` for exception mapping and HTTP serialization.
 
-Tool registrations can also provide JSON metadata and append image content to
-validated results. See [metadata and image results](GUIDE.md#metadata-and-image-results)
+Tool registrations can also provide JSON metadata and append typed content to
+validated results. See [metadata and content results](GUIDE.md#metadata-and-content-results)
 for a complete example.
 
 ## Supported MCP surface

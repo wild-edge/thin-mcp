@@ -143,11 +143,6 @@ class ToolsListResult(CacheableResult):
     tools: list[ToolDefinition]
 
 
-class TextContent(BaseModel):
-    type: Literal["text"] = "text"
-    text: str
-
-
 class ContentAnnotations(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
@@ -162,12 +157,9 @@ class ContentAnnotations(BaseModel):
     )
 
 
-class ImageContent(BaseModel):
+class ContentFields(BaseModel):
     model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False)
 
-    type: Literal["image"] = "image"
-    data: str
-    mime_type: str = Field(alias="mimeType")
     annotations: ContentAnnotations | None = Field(
         default=None, exclude_if=lambda value: value is None
     )
@@ -176,8 +168,67 @@ class ImageContent(BaseModel):
     )
 
 
-ContentBlock = Annotated[TextContent | ImageContent, Field(discriminator="type")]
+class TextContent(ContentFields):
+    type: Literal["text"] = "text"
+    text: str
 
+
+class ImageContent(ContentFields):
+    type: Literal["image"] = "image"
+    data: str
+    mime_type: str = Field(alias="mimeType")
+
+
+class AudioContent(ContentFields):
+    type: Literal["audio"] = "audio"
+    data: str
+    mime_type: str = Field(alias="mimeType")
+
+
+class ResourceLink(ContentFields):
+    type: Literal["resource_link"] = "resource_link"
+    uri: str
+    name: str
+    title: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    description: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    mime_type: str | None = Field(
+        default=None, alias="mimeType", exclude_if=lambda value: value is None
+    )
+    size: int | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
+
+
+class ResourceContents(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False, extra="forbid")
+
+    uri: str
+    mime_type: str | None = Field(
+        default=None, alias="mimeType", exclude_if=lambda value: value is None
+    )
+    annotations: ContentAnnotations | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    meta: dict[str, JsonValue] | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
+
+
+class TextResourceContents(ResourceContents):
+    text: str
+
+
+class BlobResourceContents(ResourceContents):
+    blob: str
+
+
+class EmbeddedResource(ContentFields):
+    type: Literal["resource"] = "resource"
+    resource: TextResourceContents | BlobResourceContents
+
+
+ContentBlock = Annotated[
+    TextContent | ImageContent | AudioContent | ResourceLink | EmbeddedResource,
+    Field(discriminator="type"),
+]
 
 class ToolResult(McpResult):
     model_config = ConfigDict(populate_by_name=True)

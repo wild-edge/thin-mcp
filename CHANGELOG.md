@@ -9,7 +9,8 @@ All notable changes to this project are documented here. The project follows
 
 ### Added
 
-- JSON tool metadata and typed image content callbacks alongside structured results.
+- JSON tool metadata and typed text, image, audio, resource link, and embedded
+  resource content callbacks alongside structured results.
 - GitHub Release publishing workflow using PyPI Trusted Publishing, with
   release checks and isolated wheel installation checks.
 - Modern MCP `2026-07-28` discovery, metadata, and Streamable HTTP header
