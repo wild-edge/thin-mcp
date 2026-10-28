@@ -4,6 +4,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    JsonValue,
     SerializeAsAny,
     StringConstraints,
     model_validator,
@@ -126,13 +127,16 @@ class ToolAnnotations(BaseModel):
 
 
 class ToolDefinition(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False)
 
     name: McpToolName
     description: str
     input_schema: dict[str, Any] = Field(alias="inputSchema")
     output_schema: dict[str, Any] = Field(alias="outputSchema")
     annotations: ToolAnnotations = Field(default_factory=ToolAnnotations)
+    meta: dict[str, JsonValue] | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
 
 
 class ToolsListResult(CacheableResult):
@@ -144,10 +148,41 @@ class TextContent(BaseModel):
     text: str
 
 
+class ContentAnnotations(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    audience: list[Literal["user", "assistant"]] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    priority: float | None = Field(
+        default=None, ge=0, le=1, exclude_if=lambda value: value is None
+    )
+    last_modified: str | None = Field(
+        default=None, alias="lastModified", exclude_if=lambda value: value is None
+    )
+
+
+class ImageContent(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False)
+
+    type: Literal["image"] = "image"
+    data: str
+    mime_type: str = Field(alias="mimeType")
+    annotations: ContentAnnotations | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    meta: dict[str, JsonValue] | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
+
+
+ContentBlock = Annotated[TextContent | ImageContent, Field(discriminator="type")]
+
+
 class ToolResult(McpResult):
     model_config = ConfigDict(populate_by_name=True)
 
-    content: list[TextContent]
+    content: list[ContentBlock]
     structured_content: SerializeAsAny[BaseModel] | None = Field(
         default=None,
         alias="structuredContent",

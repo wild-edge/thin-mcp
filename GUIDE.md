@@ -252,6 +252,56 @@ Use `ToolExecutionError` for expected failures that a client can act on. Allow
 unexpected exceptions to propagate so the host can log them and return a safe
 internal-error envelope.
 
+## Metadata and image results
+
+A registration may provide JSON-compatible `meta`, exposed unchanged as `_meta`
+in `tools/list`, and a `content_builder` that receives the request context and
+validated result. Its text or image blocks follow the existing JSON text
+fallback; `structuredContent` remains the validated result. The callback runs
+once after permissions and validation. Raise `ToolExecutionError` for expected
+failures; unexpected exceptions propagate to the host.
+
+```python
+from pydantic import BaseModel
+from thin_mcp import ImageContent, ToolContext, ToolRegistry
+
+
+class PreviewArguments(BaseModel):
+    label: str
+
+
+class PreviewResult(BaseModel):
+    label: str
+
+
+def preview_content(context: ToolContext, result: PreviewResult) -> list[ImageContent]:
+    # A tiny prepared PNG; real applications load an authorized, bounded preview.
+    png = (
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8A"
+        "AwMCAO+/aXcAAAAASUVORK5CYII="
+    )
+    return [ImageContent(data=png, mime_type="image/png")]
+
+
+registry = ToolRegistry()
+
+
+@registry.register(
+    name="preview",
+    description="Return a labeled preview.",
+    arguments_model=PreviewArguments,
+    result_model=PreviewResult,
+    meta={"example.org/preview": {"kind": "image"}},
+    content_builder=preview_content,
+)
+def preview(context: ToolContext, arguments: PreviewArguments) -> PreviewResult:
+    return PreviewResult(label=arguments.label)
+```
+
+Image data is base64-encoded and increases payload size by roughly one third.
+The host owns image access checks, preparation, and preview size limits. Test
+actual display separately with each target client.
+
 ## 7. Import domain modules explicitly
 
 Registration happens when the domain module is imported. Make that side effect
