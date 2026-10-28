@@ -1,10 +1,11 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict, JsonValue, TypeAdapter, ValidationError
 
 from thin_mcp.schemas import (
+    ContentBlock,
     TextContent,
     ToolAnnotations,
     ToolDefinition,
@@ -15,6 +16,9 @@ ArgumentsT = TypeVar("ArgumentsT", bound=BaseModel)
 ResultT = TypeVar("ResultT", bound=BaseModel)
 ResourceT = TypeVar("ResourceT")
 ToolHandler = Callable[["ToolContext", ArgumentsT], ResultT]
+ContentBuilder = Callable[["ToolContext", ResultT], Sequence[ContentBlock]]
+
+_metadata_adapter = TypeAdapter(dict[str, JsonValue], config=ConfigDict(allow_inf_nan=False))
 
 
 class ToolExecutionError(Exception):
@@ -80,6 +84,8 @@ class McpTool[ArgumentsT: BaseModel, ResultT: BaseModel]:
     invalid_arguments_message: str
     permissions: tuple[ToolPermission, ...] = ()
     annotations: ToolAnnotations = field(default_factory=ToolAnnotations)
+    meta: dict[str, JsonValue] | None = None
+    content_builder: ContentBuilder[ResultT] | None = None
 
     def definition(self) -> ToolDefinition:
         return ToolDefinition(
@@ -88,6 +94,7 @@ class McpTool[ArgumentsT: BaseModel, ResultT: BaseModel]:
             inputSchema=self.arguments_model.model_json_schema(),
             outputSchema=self.result_model.model_json_schema(),
             annotations=self.annotations,
+            _meta=self.meta,
         )
 
     def execute(
@@ -113,7 +120,19 @@ class McpTool[ArgumentsT: BaseModel, ResultT: BaseModel]:
             return tool_error_result(str(exc))
 
         result = self.result_model.model_validate(raw_result)
-        return tool_result(result)
+        try:
+            extra_content = (
+                self.content_builder(context, result)
+                if self.content_builder is not None
+                else ()
+            )
+            response = tool_result(result)
+            return ToolResult(
+                content=[*response.content, *extra_content],
+                structuredContent=result,
+            )
+        except ToolExecutionError as exc:
+            return tool_error_result(str(exc))
 
 
 class ToolRegistry:
@@ -132,6 +151,8 @@ class ToolRegistry:
         permissions: tuple[ToolPermission, ...] = (),
         invalid_arguments_message: str = "Invalid tool arguments.",
         annotations: ToolAnnotations | None = None,
+        meta: dict[str, JsonValue] | None = None,
+        content_builder: ContentBuilder[ResultT] | None = None,
     ) -> Callable[[ToolHandler[ArgumentsT, ResultT]], ToolHandler[ArgumentsT, ResultT]]:
         def decorator(
             handler: ToolHandler[ArgumentsT, ResultT],
@@ -146,6 +167,8 @@ class ToolRegistry:
                 handler=handler,
                 invalid_arguments_message=invalid_arguments_message,
                 permissions=permissions,
+                meta=_metadata_adapter.validate_python(meta) if meta is not None else None,
+                content_builder=content_builder,
                 annotations=(
                     annotations if annotations is not None else ToolAnnotations()
                 ),

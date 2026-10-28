@@ -4,6 +4,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    JsonValue,
     SerializeAsAny,
     StringConstraints,
     model_validator,
@@ -126,28 +127,113 @@ class ToolAnnotations(BaseModel):
 
 
 class ToolDefinition(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False)
 
     name: McpToolName
     description: str
     input_schema: dict[str, Any] = Field(alias="inputSchema")
     output_schema: dict[str, Any] = Field(alias="outputSchema")
     annotations: ToolAnnotations = Field(default_factory=ToolAnnotations)
+    meta: dict[str, JsonValue] | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
 
 
 class ToolsListResult(CacheableResult):
     tools: list[ToolDefinition]
 
 
-class TextContent(BaseModel):
+class ContentAnnotations(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    audience: list[Literal["user", "assistant"]] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    priority: float | None = Field(
+        default=None, ge=0, le=1, exclude_if=lambda value: value is None
+    )
+    last_modified: str | None = Field(
+        default=None, alias="lastModified", exclude_if=lambda value: value is None
+    )
+
+
+class ContentFields(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False)
+
+    annotations: ContentAnnotations | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    meta: dict[str, JsonValue] | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
+
+
+class TextContent(ContentFields):
     type: Literal["text"] = "text"
     text: str
 
 
+class ImageContent(ContentFields):
+    type: Literal["image"] = "image"
+    data: str
+    mime_type: str = Field(alias="mimeType")
+
+
+class AudioContent(ContentFields):
+    type: Literal["audio"] = "audio"
+    data: str
+    mime_type: str = Field(alias="mimeType")
+
+
+class ResourceLink(ContentFields):
+    type: Literal["resource_link"] = "resource_link"
+    uri: str
+    name: str
+    title: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    description: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    mime_type: str | None = Field(
+        default=None, alias="mimeType", exclude_if=lambda value: value is None
+    )
+    size: int | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
+
+
+class ResourceContents(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, allow_inf_nan=False, extra="forbid")
+
+    uri: str
+    mime_type: str | None = Field(
+        default=None, alias="mimeType", exclude_if=lambda value: value is None
+    )
+    annotations: ContentAnnotations | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    meta: dict[str, JsonValue] | None = Field(
+        default=None, alias="_meta", exclude_if=lambda value: value is None
+    )
+
+
+class TextResourceContents(ResourceContents):
+    text: str
+
+
+class BlobResourceContents(ResourceContents):
+    blob: str
+
+
+class EmbeddedResource(ContentFields):
+    type: Literal["resource"] = "resource"
+    resource: TextResourceContents | BlobResourceContents
+
+
+ContentBlock = Annotated[
+    TextContent | ImageContent | AudioContent | ResourceLink | EmbeddedResource,
+    Field(discriminator="type"),
+]
+
 class ToolResult(McpResult):
     model_config = ConfigDict(populate_by_name=True)
 
-    content: list[TextContent]
+    content: list[ContentBlock]
     structured_content: SerializeAsAny[BaseModel] | None = Field(
         default=None,
         alias="structuredContent",
