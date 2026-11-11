@@ -29,7 +29,7 @@ domain operation or call another HTTP endpoint inside the same process.
 ## 2. Install the Django integration extra
 
 ```bash
-uv add "thin-mcp[django]>=0.1.0,<0.2.0"
+uv add "thin-mcp[django]>=0.2.1,<0.3.0"
 ```
 
 For local development against a sibling checkout:
@@ -37,7 +37,7 @@ For local development against a sibling checkout:
 ```toml
 [project]
 dependencies = [
-    "thin-mcp[django]>=0.1.0,<0.2.0",
+    "thin-mcp[django]>=0.2.1,<0.3.0",
 ]
 
 [tool.uv.sources]

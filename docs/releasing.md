@@ -38,9 +38,7 @@ job has `id-token: write` permission.
 
 1. Choose an unused version according to the compatibility policy. Update
    `project.version` in `pyproject.toml`, run `uv lock`, and move the relevant
-   `CHANGELOG.md` entries into a dated version section. For the first upload,
-   reconcile the existing `0.1.0` changelog section and unreleased entries with
-   the version you choose; the current package version is `0.1.0`.
+   `CHANGELOG.md` entries into a dated version section.
 2. Run the checks in [AGENTS.md](../AGENTS.md#verification), commit, and push the
    release changes. Wait for CI to pass.
 3. On the [new GitHub Release page](https://github.com/wild-edge/thin-mcp/releases/new),
