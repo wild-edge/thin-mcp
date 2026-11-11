@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "thin-mcp"
-version = "0.2.0"
+version = "0.2.1"
 description = "A small typed framework for building MCP tool servers"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
@@ -21,6 +21,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
@@ -48,6 +49,7 @@ dev = [
     "pytest>=8.3",
     "pytest-cov>=6",
     "ruff>=0.11",
+    "tox>=4",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -63,11 +65,12 @@ addopts = [
 testpaths = ["tests"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 strict = true
 files = ["src/thin_mcp"]
 
 [tool.ruff]
+target-version = "py311"
 line-length = 88
 src = ["src", "tests"]
 

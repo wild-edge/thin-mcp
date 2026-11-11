@@ -65,7 +65,7 @@ packages, and protocol adaptation in `mcp_server/`.
 
 ## Run it
 
-From the repository root with Python 3.12 or newer:
+From the repository root with Python 3.11 or newer:
 
 ```bash
 uv run --with fastapi --with uvicorn uvicorn examples.fastapi.app:app --reload

@@ -38,16 +38,14 @@ job has `id-token: write` permission.
 
 1. Choose an unused version according to the compatibility policy. Update
    `project.version` in `pyproject.toml`, run `uv lock`, and move the relevant
-   `CHANGELOG.md` entries into a dated version section. For the first upload,
-   reconcile the existing `0.1.0` changelog section and unreleased entries with
-   the version you choose; the current package version is `0.1.0`.
+   `CHANGELOG.md` entries into a dated version section.
 2. Run the checks in [AGENTS.md](../AGENTS.md#verification), commit, and push the
    release changes. Wait for CI to pass.
 3. On the [new GitHub Release page](https://github.com/wild-edge/thin-mcp/releases/new),
    create a tag matching the exact package version with a `v` prefix (for
    example, `v0.1.0` for version `0.1.0`). Target the tested release commit,
    add release notes, and click **Publish release**.
-4. Watch **Actions → Publish to PyPI**. It reruns the full Python 3.12–3.14 CI
+4. Watch **Actions → Publish to PyPI**. It reruns the full Python 3.11–3.14 CI
    matrix, verifies the tag, builds distributions, validates their metadata,
    and checks isolated core and Django-extra installations. Only after these
    pass does it upload those same artifacts to PyPI.

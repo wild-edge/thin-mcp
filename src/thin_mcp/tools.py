@@ -1,6 +1,6 @@
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 
 from pydantic import BaseModel, ConfigDict, JsonValue, TypeAdapter, ValidationError
 
@@ -54,7 +54,7 @@ class ToolPermission(Protocol):
         """Raise ToolPermissionDenied when access should be rejected."""
 
 
-def tool_result[ResultT: BaseModel](
+def tool_result(
     data: ResultT,
 ) -> ToolResult:
     """Format a structured tool result with a concise text fallback."""
@@ -73,7 +73,7 @@ def tool_error_result(message: str) -> ToolResult:
 
 
 @dataclass(frozen=True)
-class McpTool[ArgumentsT: BaseModel, ResultT: BaseModel]:
+class McpTool(Generic[ArgumentsT, ResultT]):
     """One typed, permission-checked MCP tool declaration."""
 
     name: str

@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The project follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-11
+
+### Added
+
+- Python 3.11 support, with tox compatibility tests for Python 3.11–3.14
+  and Python 3.11 included in CI.
+
 ## [0.2.0]
 
 ### Added
@@ -35,6 +42,7 @@ All notable changes to this project are documented here. The project follows
   tool calls, and notifications.
 - Optional Django Ninja HTTP and exception adapter.
 
-[Unreleased]: https://github.com/wild-edge/thin-mcp/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/wild-edge/thin-mcp/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/wild-edge/thin-mcp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/wild-edge/thin-mcp/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/wild-edge/thin-mcp/releases/tag/v0.1.0
