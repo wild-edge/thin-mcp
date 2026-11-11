@@ -47,7 +47,7 @@ job has `id-token: write` permission.
    create a tag matching the exact package version with a `v` prefix (for
    example, `v0.1.0` for version `0.1.0`). Target the tested release commit,
    add release notes, and click **Publish release**.
-4. Watch **Actions → Publish to PyPI**. It reruns the full Python 3.12–3.14 CI
+4. Watch **Actions → Publish to PyPI**. It reruns the full Python 3.11–3.14 CI
    matrix, verifies the tag, builds distributions, validates their metadata,
    and checks isolated core and Django-extra installations. Only after these
    pass does it upload those same artifacts to PyPI.

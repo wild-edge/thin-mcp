@@ -16,7 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        include:
+          - python-version: "3.11"
+            tox-env: py311
+          - python-version: "3.12"
+            tox-env: py312
+          - python-version: "3.13"
+            tox-env: py313
+          - python-version: "3.14"
+            tox-env: py314
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +35,5 @@ jobs:
       - run: uv sync --locked --extra django --group dev
       - run: uv run ruff check .
       - run: uv run mypy
-      - run: uv run pytest
-      - run: uv run --with fastapi --with httpx pytest examples --no-cov
+      - run: uv run tox -e ${{ matrix.tox-env }}
       - run: uv build

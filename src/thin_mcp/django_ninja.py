@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import Any
+from typing import Any, TypeVar
 
 from django.http import HttpRequest, HttpResponse
 from ninja import NinjaAPI
@@ -15,10 +15,12 @@ from ninja.errors import (
 from thin_mcp.error_codes import JsonRpcErrorCode
 from thin_mcp.responses import McpHttpResult
 
+ExceptionT = TypeVar("ExceptionT", bound=Exception)
+
 logger = logging.getLogger(__name__)
 
 
-def exception_instance[ExceptionT: Exception](
+def exception_instance(
     exc: ExceptionT | type[ExceptionT],
 ) -> ExceptionT:
     if isinstance(exc, type):

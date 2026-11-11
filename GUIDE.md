@@ -88,6 +88,7 @@ registration once so that declaration cannot be forgotten.
 # mcp_server/tools_registry.py
 from collections.abc import Callable
 from enum import StrEnum
+from typing import TypeVar
 
 from pydantic import BaseModel
 
@@ -97,6 +98,9 @@ from thin_mcp import (
     ToolPermission,
     ToolRegistry,
 )
+
+ArgumentsT = TypeVar("ArgumentsT", bound=BaseModel)
+ResultT = TypeVar("ResultT", bound=BaseModel)
 
 tool_registry = ToolRegistry()
 
@@ -110,7 +114,7 @@ class ToolAccess(StrEnum):
 tool_access: dict[str, ToolAccess] = {}
 
 
-def register_tool[ArgumentsT: BaseModel, ResultT: BaseModel](
+def register_tool(
     *,
     name: str,
     description: str,
@@ -548,7 +552,7 @@ For a new host application:
 
 For this library:
 
-- run the Python 3.12–3.14 CI matrix on every change;
+- run the Python 3.11–3.14 CI matrix on every change;
 - verify both core-only and `django`-extra installations;
 - add protocol features only when a real host needs them;
 - document public API changes in `CHANGELOG.md`; and

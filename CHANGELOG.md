@@ -5,6 +5,11 @@ All notable changes to this project are documented here. The project follows
 
 ## [Unreleased]
 
+### Added
+
+- Python 3.11 support, with tox compatibility tests for Python 3.11–3.14
+  and Python 3.11 included in CI.
+
 ## [0.2.0]
 
 ### Added

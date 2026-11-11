@@ -56,7 +56,7 @@ Install the optional Django Ninja adapter:
 pip install "thin-mcp[django]"
 ```
 
-Python 3.12 or newer and Pydantic 2.12 or newer are required.
+Python 3.11 or newer and Pydantic 2.12 or newer are required.
 
 ## Recommended Django integration
 
@@ -188,6 +188,12 @@ uv run mypy
 uv run pytest
 uv build
 ```
+
+Run the isolated compatibility suite with `uv run tox` (Python 3.11–3.14),
+or use `uv run tox -e py311` to check Python 3.11 only. Install the selected
+Python interpreters first; missing interpreters cause tox to fail. Each tox
+environment installs the built wheel with the Django extra and runs the package
+and runnable host example tests.
 
 Repository contributors should also read [AGENTS.md](AGENTS.md).
 Maintainers can follow [Publishing to PyPI](docs/releasing.md) to configure
